@@ -18,10 +18,10 @@ from torch_tensorrt.fx.utils import LowerPrecision
 from .gmflow.transformer import FeatureTransformer
 from .gmfss import GMFSS
 
-__version__ = '1.0.0'
+__version__ = "1.0.0"
 
 package_dir = os.path.dirname(os.path.realpath(__file__))
-model_dir = os.path.join(package_dir, 'models')
+model_dir = os.path.join(package_dir, "models")
 
 
 @torch.inference_mode()
@@ -71,45 +71,45 @@ def gmfss_union(
                                     Leave it None if the clip already has _SceneChangeNext properly set.
     """
     if not isinstance(clip, vs.VideoNode):
-        raise vs.Error('gmfss_union: this is not a clip')
+        raise vs.Error("gmfss_union: this is not a clip")
 
     if clip.format.id not in [vs.RGBH, vs.RGBS]:
-        raise vs.Error('gmfss_union: only RGBH and RGBS formats are supported')
+        raise vs.Error("gmfss_union: only RGBH and RGBS formats are supported")
 
     if clip.num_frames < 2:
         raise vs.Error("gmfss_union: clip's number of frames must be at least 2")
 
     if not torch.cuda.is_available():
-        raise vs.Error('gmfss_union: CUDA is not available')
+        raise vs.Error("gmfss_union: CUDA is not available")
 
     if num_streams < 1:
-        raise vs.Error('gmfss_union: num_streams must be at least 1')
+        raise vs.Error("gmfss_union: num_streams must be at least 1")
 
     if num_streams > vs.core.num_threads:
-        raise vs.Error('gmfss_union: setting num_streams greater than `core.num_threads` is useless')
+        raise vs.Error("gmfss_union: setting num_streams greater than `core.num_threads` is useless")
 
     if model not in range(2):
-        raise vs.Error('gmfss_union: model must be 0 or 1')
+        raise vs.Error("gmfss_union: model must be 0 or 1")
 
     if factor_num < 1:
-        raise vs.Error('gmfss_union: factor_num must be at least 1')
+        raise vs.Error("gmfss_union: factor_num must be at least 1")
 
     if factor_den < 1:
-        raise vs.Error('gmfss_union: factor_den must be at least 1')
+        raise vs.Error("gmfss_union: factor_den must be at least 1")
 
     if fps_num is not None and fps_num < 1:
-        raise vs.Error('gmfss_union: fps_num must be at least 1')
+        raise vs.Error("gmfss_union: fps_num must be at least 1")
 
     if fps_den is not None and fps_den < 1:
-        raise vs.Error('gmfss_union: fps_den must be at least 1')
+        raise vs.Error("gmfss_union: fps_den must be at least 1")
 
     if fps_num is not None and fps_den is not None and clip.fps == 0:
         raise vs.Error(
-            'gmfss_union: clip does not have a valid frame rate and hence fps_num and fps_den cannot be used'
+            "gmfss_union: clip does not have a valid frame rate and hence fps_num and fps_den cannot be used"
         )
 
     if scale not in [0.25, 0.5, 1.0, 2.0, 4.0]:
-        raise vs.Error('gmfss_union: scale must be 0.25, 0.5, 1.0, 2.0, or 4.0')
+        raise vs.Error("gmfss_union: scale must be 0.25, 0.5, 1.0, 2.0, or 4.0")
 
     torch.backends.cuda.matmul.allow_tf32 = True
 
@@ -118,16 +118,16 @@ def gmfss_union(
     fp16 = clip.format.bits_per_sample == 16
     dtype = torch.half if fp16 else torch.float
 
-    device = torch.device('cuda', device_index)
+    device = torch.device("cuda", device_index)
 
     stream = [torch.cuda.Stream(device=device) for _ in range(num_streams)]
     stream_lock = [Lock() for _ in range(num_streams)]
 
     match model:
         case 0:
-            model_type = 'vanillagan'
+            model_type = "vanillagan"
         case 1:
-            model_type = 'wgan'
+            model_type = "wgan"
 
     module = GMFSS(model_dir, model_type, scale, ensemble)
     module.eval().to(device, memory_format=memory_format)
@@ -144,20 +144,20 @@ def gmfss_union(
     if trt:
         device_name = torch.cuda.get_device_name(device)
         trt_version = tensorrt.__version__
-        dimensions = f'{pw}x{ph}'
-        precision = 'fp16' if fp16 else 'fp32'
+        dimensions = f"{pw}x{ph}"
+        precision = "fp16" if fp16 else "fp32"
         trt_engine_path = os.path.join(
             os.path.realpath(trt_cache_path),
             (
-                f'gmfss_union-{model_type}'
-                + f'_{device_name}'
-                + f'_trt-{trt_version}'
-                + f'_{dimensions}'
-                + f'_{precision}'
-                + f'_workspace-{trt_max_workspace_size}'
-                + f'_scale-{scale}'
-                + f'_ensemble-{ensemble}'
-                + '.pt'
+                f"gmfss_union-{model_type}"
+                + f"_{device_name}"
+                + f"_trt-{trt_version}"
+                + f"_{dimensions}"
+                + f"_{precision}"
+                + f"_workspace-{trt_max_workspace_size}"
+                + f"_scale-{scale}"
+                + f"_ensemble-{ensemble}"
+                + ".pt"
             ),
         )
 
@@ -201,7 +201,7 @@ def gmfss_union(
     def inference(n: int, f: list[vs.VideoFrame]) -> vs.VideoFrame:
         remainder = n * factor_den % factor_num
 
-        if remainder == 0 or (sc and f[0].props.get('_SceneChangeNext')):
+        if remainder == 0 or (sc and f[0].props.get("_SceneChangeNext")):
             return f[0]
 
         nonlocal index
@@ -241,11 +241,11 @@ def gmfss_union(
 def sc_detect(clip: vs.VideoNode, threshold: float) -> vs.VideoNode:
     def copy_property(n: int, f: list[vs.VideoFrame]) -> vs.VideoFrame:
         fout = f[0].copy()
-        fout.props['_SceneChangePrev'] = f[1].props['_SceneChangePrev']
-        fout.props['_SceneChangeNext'] = f[1].props['_SceneChangeNext']
+        fout.props["_SceneChangePrev"] = f[1].props["_SceneChangePrev"]
+        fout.props["_SceneChangeNext"] = f[1].props["_SceneChangeNext"]
         return fout
 
-    sc_clip = clip.resize.Bicubic(format=vs.GRAY8, matrix_s='709').misc.SCDetect(threshold)
+    sc_clip = clip.resize.Bicubic(format=vs.GRAY8, matrix_s="709").misc.SCDetect(threshold)
     return clip.std.FrameEval(lambda n: clip.std.ModifyFrame([clip, sc_clip], copy_property), clip_src=[clip, sc_clip])
 
 

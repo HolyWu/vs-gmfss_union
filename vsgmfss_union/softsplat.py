@@ -275,9 +275,7 @@ def softsplat(tenIn:torch.Tensor, tenFlow:torch.Tensor, tenMetric:torch.Tensor, 
         tenOut = tenOut[:, :-1, :, :] / tenNormalize
     # end
 
-    if orig_dtype == torch.half:
-        tenOut = tenOut.half()
-    return tenOut
+    return tenOut.to(orig_dtype)
 # end
 
 

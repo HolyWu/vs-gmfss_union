@@ -31,7 +31,6 @@ def gmfss_union(
     num_streams: int = 1,
     trt: bool = False,
     trt_max_workspace_size: int = 1 << 25,
-    trt_strict_type: bool = True,
     trt_cache_path: str = package_dir,
     model: int = 0,
     factor_num: int = 2,
@@ -51,7 +50,6 @@ def gmfss_union(
     :param num_streams:             Number of CUDA streams to enqueue the kernels.
     :param trt:                     Use TensorRT for high-performance inference.
     :param trt_max_workspace_size:  Maximum workspace size for TensorRT engine.
-    :param trt_strict_type:         Require TensorRT engine to strictly follow data type setting at execution time.
     :param trt_cache_path:          Path for TensorRT engine file. Engine will be cached when it's built for the first
                                     time. Note each engine is created for specific settings such as model path/name,
                                     precision, workspace etc, and specific GPUs and it's not portable.
@@ -167,7 +165,6 @@ def gmfss_union(
                 min_acc_module_size=1,
                 leaf_module_list={FeatureTransformer, InstanceNorm2d},
                 max_workspace_size=trt_max_workspace_size,
-                strict_type_constraints=trt_strict_type,
                 dynamic_batch=False,
                 tactic_sources=1 << int(tensorrt.TacticSource.EDGE_MASK_CONVOLUTIONS)
                 | 1 << int(tensorrt.TacticSource.JIT_CONVOLUTIONS),

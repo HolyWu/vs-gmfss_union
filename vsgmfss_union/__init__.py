@@ -18,7 +18,7 @@ from torch_tensorrt.fx.utils import LowerPrecision
 from .gmflow.transformer import FeatureTransformer
 from .gmfss import GMFSS
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 os.environ["CUDA_MODULE_LOADING"] = "LAZY"
 

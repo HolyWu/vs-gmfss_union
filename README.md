@@ -1,6 +1,8 @@
 # GMFSS_union
 High Performance GMFSS with RIFE and GAN for Anime Video Frame Interpolation, based on https://github.com/98mxr/GMFSS_union.
 
+Now superseded by https://github.com/HolyWu/vs-gmfss_fortuna.
+
 
 ## Dependencies
 - [CuPy](https://docs.cupy.dev/en/stable/install.html)
